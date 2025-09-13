@@ -10,6 +10,8 @@ run:
   args:
     - -exc
     - |
+      echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
       echo "🔧 Installation de curl..."
       apk add --no-cache curl
 
