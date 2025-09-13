@@ -1,0 +1,38 @@
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: https://github.com/wilydamtchou/concourse-demo.git
+      branch: master
+
+  - name: demo-image
+    type: docker-image
+    source:
+      repository: 127.0.0.1:5001/demo
+      insecure_registries: true
+
+jobs:
+  - name: test-network
+    plan:
+      - get: repo
+      - task: network-check
+        file: repo/ci/tasks/network-check.yml
+  - name: build-and-push
+    plan:
+      - get: repo
+        trigger: true
+      - task: maven-build
+        file: repo/ci/tasks/build.yml
+      - put: demo-image
+        params:
+          build: repo
+          dockerfile: Dockerfile
+          tag: latest
+  - name: deploy
+    plan:
+      - get: demo-image
+        trigger: true
+      - get: repo
+        passed: [build-and-push]
+      - task: deploy
+        file: repo/ci/tasks/deploy.yml

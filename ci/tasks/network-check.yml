@@ -1,0 +1,22 @@
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: alpine
+
+run:
+  path: sh
+  args:
+    - -exc
+    - |
+      echo "🔧 Installation de curl..."
+      apk add --no-cache curl
+
+      echo "🔍 Test de connectivité vers github.com..."
+      ping -c 4 github.com || { echo "❌ Ping échoué"; exit 1; }
+
+      echo "🌐 Test HTTP avec curl..."
+      curl -Is https://github.com | head -n 1 || { echo "❌ HTTP échoué"; exit 1; }
+
+      echo "✅ Connectivité réseau OK"
