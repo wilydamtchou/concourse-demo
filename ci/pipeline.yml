@@ -2,7 +2,7 @@ resources:
   - name: repo
     type: git
     source:
-      https://github.com/wilydamtchou/concourse-demo.git
+      uri: https://github.com/wilydamtchou/concourse-demo.git
 #     uri: git@github.com:wilydamtchou/concourse-demo.git
       branch: master
 #     private_key: ((private_ssh_key))
