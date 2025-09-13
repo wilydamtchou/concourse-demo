@@ -1,3 +1,10 @@
+resource_types:
+  - name: git-ubuntu
+    type: registry-image
+    source:
+      repository: concourse/git-resource
+      tag: ubuntu
+
 resources:
   - name: repo
     type: git
