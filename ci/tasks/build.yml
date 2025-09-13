@@ -14,6 +14,7 @@ run:
   args:
     - -exc
     - |
+      echo "nameserver 8.8.8.8" > /etc/resolv.conf
       cd repo
       mvn -U -DskipTests package
       # leave artifact in target/ for Dockerfile COPY

@@ -14,6 +14,7 @@ run:
   args:
     - -exc
     - |
+      echo "nameserver 8.8.8.8" > /etc/resolv.conf
       # le worker Concourse doit avoir accès au daemon Docker (socket monté)
       docker --version
       docker pull 127.0.0.1:5001/demo:latest
