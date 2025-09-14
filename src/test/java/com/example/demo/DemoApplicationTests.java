@@ -25,6 +25,6 @@ class DemoApplicationTests {
         String url = "http://localhost:" + port + "/";
         String response = restTemplate.getForObject(url, String.class);
 
-        assertThat(response).isEqualTo("Hello World !");
+        assertThat(response).isEqualTo("Hello World");
     }
 }
