@@ -1,18 +1,14 @@
-resource_types:
-  - name: git-ubuntu
-    type: registry-image
-    source:
-      repository: concourse/git-resource
-      tag: ubuntu
-
 resources:
   - name: repo
     type: git
     source:
+      uri: https://github.com/wilydamtchou/concourse-demo.git
+      username: wilydamtchou
+      password: ((github_token))
+#   source:
 #     uri: https://github.com/wilydamtchou/concourse-demo.git
-      uri: git@github.com:wilydamtchou/concourse-demo.git
-      branch: master
-      private_key: ((private_ssh_key))
+#     branch: master
+#     private_key: ((private_ssh_key))
 
   - name: demo-image
     type: docker-image
@@ -21,11 +17,6 @@ resources:
       insecure_registries: true
 
 jobs:
-  - name: test-network
-    plan:
-      - get: repo
-      - task: network-check
-        file: repo/ci/tasks/network-check.yml
   - name: build-and-push
     plan:
       - get: repo
