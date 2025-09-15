@@ -33,3 +33,4 @@ build/
 .vscode/
 
 ci/credentials.yml
+ci/params.yml

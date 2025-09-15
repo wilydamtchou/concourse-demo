@@ -2,37 +2,92 @@ resources:
   - name: repo
     type: git
     source:
-      uri: https://github.com/wilydamtchou/concourse-demo.git
-      username: wilydamtchou
+      uri: ((github_uri))
+      username: ((github_username))
       password: ((github_token))
-#   source:
-#     uri: https://github.com/wilydamtchou/concourse-demo.git
-#     branch: master
-#     private_key: ((private_ssh_key))
 
-  - name: demo-image
+  - name: docker-image
     type: docker-image
     source:
-      repository: 127.0.0.1:5001/demo
-      insecure_registries: true
+      repository: ((docker_repository))
+      username: ((docker_username))
+      password: ((docker_token))
 
 jobs:
+  - name: run-tests
+    plan:
+      - get: repo
+        trigger: true
+      - task: maven-tests
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: maven
+              tag: 3.9.9-eclipse-temurin-24
+          inputs:
+            - name: repo
+          caches:
+            - path: repo/.m2
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cd repo
+                mvn clean test
+
   - name: build-and-push
     plan:
       - get: repo
+        passed: [run-tests]
         trigger: true
-      - task: maven-build
-        file: repo/ci/tasks/build.yml
-      - put: demo-image
+
+      - task: maven-build-and-copy
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: maven
+              tag: 3.9.9-eclipse-temurin-24
+          inputs:
+            - name: repo
+          outputs:
+            - name: repo
+          caches:
+            - path: repo/.m2
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cd repo
+                mvn clean package
+                cp target/demo-0.0.2-SNAPSHOT.jar demo-0.0.2-SNAPSHOT.jar
+
+      - task: generate-tag
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine/git
+          inputs:
+            - name: repo
+          outputs:
+            - name: tag-folder
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cd repo
+                TAG="$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+                echo "$TAG" > ../tag-folder/tag
+
+      - put: docker-image
         params:
           build: repo
-          dockerfile: Dockerfile
-          tag: latest
-  - name: deploy
-    plan:
-      - get: demo-image
-        trigger: true
-      - get: repo
-        passed: [build-and-push]
-      - task: deploy
-        file: repo/ci/tasks/deploy.yml
+          tag_file: tag-folder/tag
